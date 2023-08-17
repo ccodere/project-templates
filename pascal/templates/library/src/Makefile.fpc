@@ -1,0 +1,97 @@
+# POSIX compliant makefile to build pascal projects. This
+# one is specific to Freepascal.
+
+
+# This should be adapted depending on
+# the freepascal compiler.
+STATIC_LIBRARY_SUFFIX=.ppw
+OBJECT_SUFFIX=.ow
+
+
+# These should be defined appropriately
+# at upper level makefile so they can
+# be overriden
+PROJECT_NAME=someproject
+INSTALL_PREFIX=../install
+
+
+PROJECT_BINARY_DIR=../target
+RUNTIME_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/bin
+LIBRARY_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/bin
+AUTODOC_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/doc/autodocs
+
+
+
+# Platform specific command to remove files
+# Should support multiple files in a single command.
+RM = rm
+# Create directories including missing subdirectories
+# in the pathname
+MKDIR = mkdir -p
+# Copy files 
+CP = cp
+MV = mv
+# Repository location where built binaries will be copied
+# to.
+PC = fpc
+PFLAGS = -Fu$(INSTALL_PREFIX)/lib -Fu$(LIBRARY_OUTPUT_DIRECTORY) -Fu$(RUNTIME_OUTPUT_DIRECTORY)
+
+
+.SUFFIXES: .pas $(STATIC_LIBRARY_SUFFIX)
+
+
+SOURCES = BitStrm.pas \
+	CodecB64.pas \
+	CodecDef.pas \
+	CodecHex.pas \
+	CodecLZH.pas \
+	CodecLZJ.pas \
+	CodecLZW.pas \
+	CodecPck.pas \
+	CodecQP.pas \
+	Codecs.pas \
+	CodecShk.pas \
+	CodecSun.pas \
+	CodecSym.pas \
+	CodecUUE.pas \
+	Dict.pas \
+	ksShrink.pas \
+	LIST.pas
+
+# Generated filenames
+OBJECTS = $(SOURCES:.pas=$(STATIC_LIBRARY_SUFFIX))
+
+
+all: createdirs $(OBJECTS)
+	
+createdirs:
+	-$(MKDIR) $(RUNTIME_OUTPUT_DIRECTORY)
+	-$(MKDIR) $(LIBRARY_OUTPUT_DIRECTORY)
+
+
+.pas$(STATIC_LIBRARY_SUFFIX):
+	$(PC) $(PFLAGS) $<
+	$(MV) $@ $(LIBRARY_OUTPUT_DIRECTORY)/$@
+	$(MV) $*$(OBJECT_SUFFIX) $(LIBRARY_OUTPUT_DIRECTORY)/$*$(OBJECT_SUFFIX)
+	
+clean:
+	$(RM) $(RUNTIME_OUTPUT_DIRECTORY)/*$(OBJECT_SUFFIX)
+	$(RM) $(LIBRARY_OUTPUT_DIRECTORY)/*$(STATIC_LIBRARY_SUFFIX)
+	$(RM) $(AUTODOC_OUTPUT_DIRECTORY)/*.*
+	
+install: autodoc
+	-$(MKDIR) $(INSTALL_PREFIX)
+	-$(MKDIR) $(INSTALL_PREFIX)/bin
+	-$(MKDIR) $(INSTALL_PREFIX)/lib
+	-$(MKDIR) $(INSTALL_PREFIX)/autodoc/$(PROJECT_NAME)
+#	$(CP) $(RUNTIME_OUTPUT_DIRECTORY)/* $(INSTALL_PREFIX)/bin
+	$(CP) $(LIBRARY_OUTPUT_DIRECTORY)/* $(INSTALL_PREFIX)/lib
+	$(CP) -r $(AUTODOC_OUTPUT_DIRECTORY)/. $(INSTALL_PREFIX)/autodoc/$(PROJECT_NAME)
+	
+info:
+	echo $(OBJECTS)
+	
+autodoc:
+	-$(MKDIR) $(AUTODOC_OUTPUT_DIRECTORY)
+	pasdoc --staronly --output $(AUTODOC_OUTPUT_DIRECTORY) *.pas
+
