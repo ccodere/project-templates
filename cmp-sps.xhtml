@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html
+
+  xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=iso-8859-1" />
+    <title></title>
+  </head>
+  <body>
+    <h1>Configuration identification</h1>
+    <h2>Generic definitions</h2>
+    <p> Throughout this document, some definitions are reused, which are defined
+      below:</p>
+    <dl>
+      <dt>&lt;project_name&gt;</dt>
+      <dd>The project name, in Pascal Case, with abbreviations in full upper
+        case letters and is used as a mnemonic for the project or product
+        throughout its lifecycle. The project name should be composed of up to
+        14 alphanumeric characters as well as the "_" (underscore) and "-"
+        (hyphen) characters. </dd>
+      <dt>&lt;project_version&gt;</dt>
+      <dd> The actual project version, following the semantic versioning scheme.
+        <p>The software version is composed of three parts, an increment of the
+          MAJOR version, which indicates non interchangeable or incompatible
+          breaking changes. A MINOR version increment indicates additional
+          functionality while keeping backward compatibility, while the PATCH
+          version increment indicatess a bug or problem fix. See <cite>[SEMVER2]</cite>.</p>
+        <p>A Snapshot label is appended to the project version, <samp>"-SNAPSHOT"</samp>
+          when the software is not yet released and is still in development.
+          This is equal to the maven version element.</p>
+      </dd>
+    </dl>
+    <h2>Baseline identification</h2>
+    <p>When a baseline needs to be identified, the baseline identifier shall
+      follow the below rule:</p>
+    <p><samp>baseline_identifier ::= &lt;project_version&gt;</samp></p>
+    <h2>Runtime identification</h2>
+    <p>Runtime identification of the software shall have the following format in
+      BNF snytax:</p>
+    <p> <samp>agent_name ::= "Thales" " " &lt;project_name&gt; " "
+        &lt;project_version&gt; ["(" &lt;token&gt; ";" &lt;token&gt;...")"]</samp></p>
+    <p>The different information is previously documented above, except for the
+      following:</p>
+    <ul>
+      <li>&lt;token&gt; can be used to identify an operating system, build
+        variant, plug-in, or more detailed version information</li>
+    </ul>
+    <p> The above form equivalent to the XMP AgentName <cite>[ISO-16684-1]</cite>.
+    </p>
+    <h2>Data package naming conventions</h2>
+    <p>The generic data package naming conventions are as follows, as written in
+      EBNF syntax:</p>
+    <p> <samp>data_package_name ::= &lt;project_name&gt; "-"
+        &lt;project_version&gt; "-" &lt;qualifier&gt; "." &lt;suffix&gt;</samp></p>
+    <p> The exact definition of each new term is defined below: </p>
+    <dl>
+      <dt>&lt;qualifier&gt;</dt>
+      <dd>The actual package qualifier. If the package contains application
+        executable software, then this qualifier provides the target platform
+        name it was built for. For other packages, the following are possible:
+        <dl>
+          <dt>sources</dt>
+          <dd>The software source code.</dd>
+          <dt>autodoc</dt>
+          <dd>The documentation generated from the software source code.</dd>
+          <dt>docs</dt>
+          <dd>The user documentation.</dd>
+          <dt>debug</dt>
+          <dd>The debug version of software</dd>
+        </dl>
+      </dd>
+      <dt>&lt;suffix&gt;</dt>
+      <dd>The data package suffix.This is context and project specific.</dd>
+    </dl>
+    <h2>Establishing a configuration baseline</h2>
+    <p>The projects only have one type of baseline available, the Production
+      Baseline (PBL) for software to be used in production. This baseline
+      consists of the following actions being completed:</p>
+    <ul>
+      <li>A version description document is generated and is available</li>
+      <li>Items under version control used for building the production data
+        package and/or distribution archives are labeled/tagged with a label
+        name equal to the &lt;project_version&gt;</li>
+      <li>Generated Data package and/or distribution archives are placed under
+        configuration management by being archived or deployed to</li>
+    </ul>
+    <h2>Version description document content</h2>
+    <p>A version description document shall contain the following information: </p>
+    <ul>
+      <li>A brief statement of the purpose of the software and the environments
+        to which this document applies.</li>
+      <li>List of all important changes incorporated into the software version
+        since the previous version.</li>
+      <li>Pre-requisites for usage of the software such as minimum operating
+        environment requirements or dependency information</li>
+      <li>Installation or build instructions.</li>
+      <li>Known issues and problems.</li>
+    </ul>
+    <table style="width: 100%;" border="1">
+      <thead>
+        <tr>
+          <td>Target name</td>
+          <td>Description</td>
+          <td>GNU Make equivalent</td>
+          <td>Apache Maven phase </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>clean</td>
+          <td>Clean all files generated by compiling and preparation of the
+            distribution files. </td>
+          <td>clean</td>
+          <td>Compliant</td>
+        </tr>
+        <tr>
+          <td>install</td>
+          <td>In the case of a library, installs the package into the local
+            repository, for use as a dependency in other projects locally.</td>
+          <td>install</td>
+          <td>Compliant</td>
+        </tr>
+        <tr>
+          <td>uninstall</td>
+          <td>In the case of a library, delete the previously installed files
+            from the local repository, including configuration data.</td>
+          <td>uninstall</td>
+          <td>N/A</td>
+        </tr>
+        <tr>
+          <td>test</td>
+          <td>Test the compiled source code through a unit testing framework.</td>
+          <td>No, but target exists</td>
+          <td>Compliant</td>
+        </tr>
+        <tr>
+          <td>package</td>
+          <td>Create a distribution archive for this software.</td>
+          <td>dist</td>
+          <td>No, but added to package phase</td>
+        </tr>
+        <tr>
+          <td>package</td>
+          <td>Create a distribution archive for this software.</td>
+          <td>No, synonym to dist target.</td>
+          <td>Partial, now generates all required artifacts for distribution,
+            not only the compiled package.</td>
+        </tr>
+        <tr>
+          <td>all</td>
+          <td style="height: 40px;">Compile the source code of the project. This
+            should be the default target and should include building with debug
+            information by default. It should not build any documentation nor
+            running any tests by default.</td>
+          <td>Yes</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td>compile</td>
+          <td>Synonym for all</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>install</td>
+          <td>In the case of a library, installs the package into the local
+            repository, for use as a dependency in other projects locally.
+            Package installation should install everything including for the
+            distribution, including documentation, resources and binaries.</td>
+          <td> <br />
+          </td>
+          <td> <br />
+          </td>
+        </tr>
+        <tr>
+          <td>package</td>
+          <td>take the compiled code and package it in its distributable format,
+            such as a JAR.</td>
+          <td> <br />
+          </td>
+          <td> <br />
+          </td>
+        </tr>
+        <tr>
+          <td>deploy</td>
+          <td>In the case of a library, deploy the built package to a remote
+            repository so it can be shared to other developers and used with
+            other projects.</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+      </tbody>
+    </table>
+    <h1>Target and phases</h1>
+    <h2>Main Targets and phases</h2>
+    <dl>
+      <dt>clean</dt>
+      <dd>
+        <p> Clean all files generated by compiling and preparation of the
+          distribution files. Among others it cleans generated resources,
+          documentation, compilation artifacts and data packages. It does not
+          however delete build configuration data used for building. </p>
+      </dd>
+      <dt>compile</dt>
+      <dd>
+        <p> Compiles and links if necessary the software and generates all
+          related data used directly by the software (such as resources). By
+          default, compilation includes debugging information. </p>
+      </dd>
+      <dt>deploy</dt>
+      <dd>
+        <p>Copies the final data packages or distribution archives to the remote
+          repository for sharing with others. </p>
+      </dd>
+      <dt>install</dt>
+      <dd>
+        <p>In the case of a library, installs the package into the local
+          repository, for use as a dependency in other projects locally. Package
+          installation installs everything for the distribution, including
+          documentation, resources and compiled binaries.</p>
+      </dd>
+      <dt>package</dt>
+      <dd>
+        <p>Create a distribution archive for this software containing the the
+          binaries, resources and documentation. The root of the archive is the
+          actual directory name of the software project name, with a potential
+          version name, for example myproject-1.0.0. The <code>package</code>
+          target explicitly depends on all non-source files that are in the
+          distribution, to make sure they are up to date in the distribution,
+          including generated documentation and resources. </p>
+        <p> This target may also generate data packages in required formats used
+          for deployment in the <code>deploy</code> target. </p>
+      </dd>
+      <dt>test</dt>
+      <dd>
+        <p>Test the compiled source code through a unit testing framework.
+          Testing does not require the software to be deployed or installed
+          beforehand. </p>
+      </dd>
+      <dt>uninstall</dt>
+      <dd>
+        <p> In the case of a library, delete the previously installed files from
+          the local repository, including configuration data. This target does
+          not modify the directories where compilation is done, only the
+          directories where files are installed. </p>
+      </dd>
+    </dl>
+    
+    <h2>Other Targets and phases</h2>
+    <dl>
+      <dt>initialize</dt>
+      <dd>Used to initialize build state, e.g. set properties or create directories.</dd>
+      <dt>generate-sources</dt>
+      <dd>Generate any source code or resources for inclusion in compilation. For Makefile, to be compliant with the POSIX standard, the target name is generate_sources.</dd>
+      <dt>autodoc</dt>
+      <dd>Generate auto-generated documentation from source code.</dd>
+    </dl>
+
+    <h1>Java projects</h1>
+    <h2>General system requirements</h2>
+    <p>The following requirements are needed to build and package the software:</p>
+    <ul>
+      <li>Java Development Kit 1.6 or later</li>
+      <li>Maven version 3.2.5 or later.</li>
+    </ul>
+    <p>Java compilation follows the Maven 4.0.0 model. </p>
+    <h2>Build system configuration and overview</h2>
+    <h3>Standard configuration</h3>
+    <p>All java related projects automatically generate a standard MANIFEST.MF file which shall contain minimally the following information, if specified in the Maven project file:</p>
+    
+    <dl>
+     <dt>Implementation-Vendor</dt>
+     <dd>${project.organization.name} property</dd>
+     <dt>Implementation-Title</dt>
+     <dd>${project.name} property</dd>
+     <dt>Implementation-Version</dt>
+     <dd>${project.version}</dd>
+     <dt>Build_Target</dt>
+     <dd>The java runtime target</dd>
+    </dl>
+    
+    <h3>Standard configuration</h3>
+    
+    <p>The maven POM files contain different profiles by default. The different profiles are as follows:</p>
+    
+  <dl>
+     <dt>release</dt>
+     <dd>Generates the release artifacts for deployment to a local repository with optimization and limited debugging information. This is the <em>default</em> active profile when building.</dd>
+     <dt>release-sign</dt>
+     <dd>Generates the release artifacts for deployment to the maven central repository with optimization, signing and limited debugging information. </dd>
+     <dt>debug</dt>
+     <dd>Generates the debug executable artifacts with the <code>debug</code> classifier for deployment to a maven central repository with full debugging information.</dd>
+    <dt>jdk14</dt>
+     <dd>Generates the debug executable artifacts specifically targeting class file format 48 (JDK 1.4) with the <code>jdk14</code> classifier for deployment to a maven central repository. This is mainly used to target older systems, such CDC Foundation Profile. When running this profile, it requires JDK 1.5 to build, and uses the retrotranslator project tool to convert back to class file format compatible with JDK 1.4. It also verifies that no API outside of the specified available API's (for example: CDC Foundation profile) is used. </dd>
+     <dt>archive</dt>
+     <dd>Generates additional archives including document archives, complete source archives, and distributable package archives. 
+      This is usually for separate release distribution.</dd>
+    </dl>
+    
+    <p>The following properties may be modified to change some of the options:</p>
+    
+    <dl>
+     <dt>maven.compiler.source</dt>
+     <dd>This property sets the source version for compilation. Applies to all profiles, except <code>jdk14</code></dd>
+     <dt>maven.compiler.target</dt>
+     <dd>This property sets the target version for compilation. Applies to all profiles, except <code>jdk14</code></dd>
+     <dt>gpg.keyname</dt>
+     <dd>This property sets the key ID used for signing the artifacts.</dd>
+    </dl>
+    
+    <h3>Build procedure</h3>
+    
+    <p>The following steps should be followed for project building and deployment:</p>
+    
+    <ol> 
+      <li>Execute <code>mvn install</code> to build and install the standard release artifacts.</li>
+      <li>Execute <code>mvn -P debug install</code> to build and install the debug artifacts.</li>
+      <li>Execute <code>mvn -P jdk14 install</code> to build and install the JDK 1.4 compatible artifacts.</li>
+      <li>Execute <code>mvn -P archive package</code> to generate and independently package installable release artifacts.</li>
+    </ol>
+    
+<h1>Native projects (C and pascal)</h1>
+    <h2>General system requirements</h2>
+  <p>The following requirements are needed to build and package the software:</p>
+    <ul>
+     <li>GNU Make 3.7 or later to build the entire project from the root directory of the project.</li>
+     <li>IEEE Std 1003.1, 2004 POSIX compliant make to build the files in the different subdirectories which permits to build individual parts of the project on older systems.</li>
+      <li>IEEE Std 1003.1, 2004 POSIX compliant shell language interpreter is required for building.</li>
+    </ul>
+  <h3>Other required tools</h3>
+    <p>The following general utility, commands and tools are also to be assumed,
+      otherwise the appropriate macros in the Makefile may need to be updated: </p>
+    <dl>
+      <dt>awk</dt>
+      <dd>POSIX.1-2004 compliant pattern scanning and processing language</dd>
+      <dt>cat</dt>
+      <dd>POSIX.1-2004 compliant utility to echo to standard output data from a file</dd>
+      <dt>cd</dt>
+      <dd>POSIX.1-2004 compliant change directory utility</dd>
+      <dt>cp</dt>
+      <dd>POSIX.1-2004 compliant copy file utility</dd>
+      <dt>date</dt>
+      <dd>POSIX.1-2004 compliant utility to output the date</dd>
+      <dt>echo</dt>
+      <dd>POSIX.1-2004 compliant echo utility</dd>
+      <dt>jar</dt>
+      <dd>Java archiver, can create zip files compatible with version 2.3 or later of
+        info-zip zip</dd>
+      <dt>logname</dt>
+      <dd>POSIX.1-2004 compliant utility to return the name of the logged in
+        user</dd>
+      <dt>ls</dt>
+      <dd>POSIX.1-2004 compliant utility to list contents of directories</dd>
+      <dt>mkdir</dt>
+      <dd>POSIX.1-2004 compliant utility to create directories</dd>
+      <dt>pathchk</dt>
+      <dd>POSIX.1-2004 compliant path checking utility</dd>
+      <dt>pwd</dt>
+      <dd>POSIX.1-2004 compliant utility to print the current working directory</dd>
+      <dt>rm</dt>
+      <dd>POSIX.1-2004 compliant utility to remove files and directories</dd>
+      <dt>sed</dt>
+      <dd>POSIX.1-2004 compliant stream editor</dd>
+      <dt>unzip</dt>
+      <dd>General purpose dearchiver, equivalent to version 5.52 or later of
+        info-zip unzip</dd>
+    </dl>
+    
+    <h2>Build system configuration and overview</h2>
+    
+    <h3>Standard configuration</h3>
+    <p>When building some constants are automatically updated in the filename associated with  $(PROJECT_VERSION_FILE) file with some specific project information, such as target host, target name, project version, project name, and build date. </p>
+    
+<h3> Makefiles configuration options</h3>
+    <p>The basic project description options that are set for each project are
+      as follows:</p>
+      
+<dl>
+      <dt>PROJECT_NAME</dt>
+      <dd>The name of the project. This is equal to &lt;project_name&gt;.</dd>
+      <dt>PROJECT_DESCRIPTION</dt>
+      <dd>A description of the project, this description should fit within 250
+        characters or less and should be in English with only non-control ASCII
+        characters. This project description may be used to generate metadata
+        for the data package.</dd>
+      <dt>PROJECT_CREATORS</dt>
+      <dd>The main author or organization responsible for the development of
+        this project. If more than one author or organization participated in
+        the project, each one should be separated by others by a semi-colon.
+        After the proper name of the author or organization, a URI in bracket
+        can optionally be specified to provide contact information for each
+        author. </dd>
+      <dt>PROJECT_VERSION</dt>
+      <dd>The version of the project, equal to &lt;project_version&gt; . This
+        usually follows Semantic versioning syntax, see <cite>[SEMVER2]</cite>
+        for more information.</dd>
+      <dt>SOURCES</dt>  
+      <dd>The source files to compile</dd>
+    </dl>
+  <p>Other important properties:</p>
+  <dl>
+   <dt>INSTALL_PREFIX</dt>
+   <dd>The root location where the installation of the compiled package will be placed. The default value is <samp>../install</samp> </dd>
+   <dt>PROJECT_BINARY_DIR</dt>
+   <dd>The directory which will contain the final output binary. The default value is <samp>../target</samp></dd>
+  </dl>
+  <p>Other properties, listed below, which can also be editied, but usually work automatically out of the box</p>
+  <dl>
+   <dt>COMPILER_NAME</dt>
+   <dd>The compiler name used for compiling the project.</dd>
+   <dt>TARGET_NAME</dt>
+   <dd>Etiher a command to get target system name being built for, or a hard-coded name. This, for example when using clang, gcc or any compatible compiler is equivalent to calling with the <samp>-dumpmachine</samp> option.</dd>
+  </dl>
+<h2>C compiler requirements</h2>
+    <p>The C compiler should be compliant with ISO C90. </p>
+    <p>The configuration and command line options for the compiler are
+      configured to be compliant with the <samp>c99</samp> POSIX.1-2004
+      compliant compiler. If other compilers need to be supported, the Makefiles
+      will need to be adapted accordingly.</p>
+    <h2>C documentation generation requirements</h2>
+    <p> To generate the API documentation, <samp>doxygen</samp> tool is
+      required to be installed and be available. </p>
+    <p> To generate the user documentation in HTML and PDF formats, the <samp>XHTMLDOC</samp>
+      tool is required to be installed, which requires java 1.6 or later to also
+      be installed.</p>
+  </body>
+</html>

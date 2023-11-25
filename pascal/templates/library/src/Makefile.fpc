@@ -1,73 +1,107 @@
-# POSIX compliant makefile to build pascal projects. This
-# one is specific to Freepascal.
+############################################################
+# POSIX compliant Makefile for pascal source code building
+# and packaging.
+#
+# This one is specific to Freepascal.
+############################################################
 
+PROJECT_NAME=someproject
+PROJECT_VERSION=0.0.1-SNAPSHOT
+INSTALL_PREFIX=../install
+PROJECT_BINARY_DIR=../target
+# Should have same file suffix as source files 
+PROJECT_VERSION_FILE=hello.pas
+
+
+############### Default directory locations ###############
+DOCUMENT_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/doc
+RUNTIME_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/bin
+LIBRARY_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/lib
+AUTODOC_OUTPUT_DIRECTORY=$(DOCUMENT_OUTPUT_DIRECTORY)/autodocs
+
+############### Sources to build ###############
+
+
+SOURCES = hello.pas
+
+############### Packaging ###############
+PACKAGING_INSTALL_PREFIX=$(PROJECT_NAME)-$(PROJECT_VERSION)
+PACKAGING_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/package
+
+
+################ Compiler specific ###################
+PC = fpc
+PFLAGS = -Fu$(INSTALL_PREFIX)/lib -Fu$(LIBRARY_OUTPUT_DIRECTORY) -Fu$(RUNTIME_OUTPUT_DIRECTORY)
+COMPILER_NAME = Freepascal
+TARGET_NAME = `$(PC) -iTP`-`$(PC) -iTO`
 
 # This should be adapted depending on
 # the freepascal compiler.
-STATIC_LIBRARY_SUFFIX=.ppw
-OBJECT_SUFFIX=.ow
+STATIC_LIBRARY_SUFFIX=.ppu
+OBJECT_SUFFIX=.o
+
+################ Autodoc definitions ###################
+AUTODOC = pasdoc
+AUTODOCFLAGS = --staronly --title "$(PROJECT_NAME) $(PROJECT_VERSION)" --output $(AUTODOC_OUTPUT_DIRECTORY)
 
 
-# These should be defined appropriately
-# at upper level makefile so they can
-# be overriden
-PROJECT_NAME=someproject
-INSTALL_PREFIX=../install
+################ Utility definitions ######################
+# Assumes POSIX compliancy, should be adapted accordingly #
+###########################################################
 
-
-PROJECT_BINARY_DIR=../target
-RUNTIME_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/bin
-LIBRARY_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/bin
-AUTODOC_OUTPUT_DIRECTORY=$(PROJECT_BINARY_DIR)/doc/autodocs
-
-
-
-# Platform specific command to remove files
-# Should support multiple files in a single command.
-RM = rm
-# Create directories including missing subdirectories
-# in the pathname
-MKDIR = mkdir -p
-# Copy files 
+# Platform specific command to read data from a file and echo
+# out to standard output
+CAT = cat
+# Platform specific command to copy files from one 
+# location to another.
 CP = cp
+# Platform specific command to get the date in ISO 8601
+# date format (YYYY-MM-DD).
+DATE = gdate +%Y-%m-%d
+# Platform specific command to create a directory tree
+# including missing subdirectories.
+MKDIR = mkdir -p
+# Platform specific command to move files from
+# one location to another
 MV = mv
-# Repository location where built binaries will be copied
-# to.
-PC = fpc
-PFLAGS = -Fu$(INSTALL_PREFIX)/lib -Fu$(LIBRARY_OUTPUT_DIRECTORY) -Fu$(RUNTIME_OUTPUT_DIRECTORY)
-
+# Platform specific command to remove files. 
+# Requirement: Multiple files to be removed should 
+#  be supported in a single command.
+RM = rm
+# Platform specific command to remove files and directories
+# recursively
+RM_RECURSE = rm -R
+# Platform specific command to sed
+SED = sed
 
 .SUFFIXES: .pas $(STATIC_LIBRARY_SUFFIX)
 
 
-SOURCES = BitStrm.pas \
-	CodecB64.pas \
-	CodecDef.pas \
-	CodecHex.pas \
-	CodecLZH.pas \
-	CodecLZJ.pas \
-	CodecLZW.pas \
-	CodecPck.pas \
-	CodecQP.pas \
-	Codecs.pas \
-	CodecShk.pas \
-	CodecSun.pas \
-	CodecSym.pas \
-	CodecUUE.pas \
-	Dict.pas \
-	ksShrink.pas \
-	LIST.pas
 
 # Generated filenames
 OBJECTS = $(SOURCES:.pas=$(STATIC_LIBRARY_SUFFIX))
+# Generated package name
+PACKAGE_NAME_PREFIX = $(PROJECT_NAME)-$(PROJECT_VERSION)
+# Backup of modified files
+PROJECT_BACKUP_VERSION_FILE =$(SOURCES:.pas=.bak) 
+
+all: initialize generate_sources $(OBJECTS)
 
 
-all: createdirs $(OBJECTS)
-	
-createdirs:
+generate_sources:
+	$(CP) $(PROJECT_VERSION_FILE)  $(PROJECT_BACKUP_VERSION_FILE)  
+	${SED} -e s~@@PROJECT_NAME@@~$(PROJECT_NAME)~g \
+		-e s~@@TARGET_NAME@@~$(TARGET_NAME)~g \
+		-e s~@@PROJECT_VERSION@@~$(PROJECT_VERSION)~g \
+		-e s~@@CURRENT_DATE@@~`$(DATE)`~g \
+		-e s~@@COMPILER_NAME@@~$(COMPILER_NAME)~g \
+		$(PROJECT_BACKUP_VERSION_FILE) >$(PROJECT_VERSION_FILE)
+
+initialize:
 	-$(MKDIR) $(RUNTIME_OUTPUT_DIRECTORY)
 	-$(MKDIR) $(LIBRARY_OUTPUT_DIRECTORY)
 
+compile: all
 
 .pas$(STATIC_LIBRARY_SUFFIX):
 	$(PC) $(PFLAGS) $<
@@ -75,23 +109,26 @@ createdirs:
 	$(MV) $*$(OBJECT_SUFFIX) $(LIBRARY_OUTPUT_DIRECTORY)/$*$(OBJECT_SUFFIX)
 	
 clean:
-	$(RM) $(RUNTIME_OUTPUT_DIRECTORY)/*$(OBJECT_SUFFIX)
-	$(RM) $(LIBRARY_OUTPUT_DIRECTORY)/*$(STATIC_LIBRARY_SUFFIX)
-	$(RM) $(AUTODOC_OUTPUT_DIRECTORY)/*.*
+	-$(CP) $(PROJECT_BACKUP_VERSION_FILE)  $(PROJECT_VERSION_FILE)
+	-$(RM) $(PROJECT_BACKUP_VERSION_FILE)
+	-$(RM_RECURSE) $(PROJECT_BINARY_DIR)
 	
-install: autodoc
+install: compile autodoc
 	-$(MKDIR) $(INSTALL_PREFIX)
 	-$(MKDIR) $(INSTALL_PREFIX)/bin
 	-$(MKDIR) $(INSTALL_PREFIX)/lib
-	-$(MKDIR) $(INSTALL_PREFIX)/autodoc/$(PROJECT_NAME)
-#	$(CP) $(RUNTIME_OUTPUT_DIRECTORY)/* $(INSTALL_PREFIX)/bin
-	$(CP) $(LIBRARY_OUTPUT_DIRECTORY)/* $(INSTALL_PREFIX)/lib
-	$(CP) -r $(AUTODOC_OUTPUT_DIRECTORY)/. $(INSTALL_PREFIX)/autodoc/$(PROJECT_NAME)
-	
-info:
-	echo $(OBJECTS)
+	-$(MKDIR) $(INSTALL_PREFIX)/doc/$(PROJECT_NAME)/$(PROJECT_VERSION)/autodoc
+	-$(CP) $(RUNTIME_OUTPUT_DIRECTORY)/* $(INSTALL_PREFIX)/bin
+	-$(CP) $(LIBRARY_OUTPUT_DIRECTORY)/* $(INSTALL_PREFIX)/lib
+	-$(CP) -r $(AUTODOC_OUTPUT_DIRECTORY)/. $(INSTALL_PREFIX)/doc/$(PROJECT_NAME)/$(PROJECT_VERSION)/autodoc
 	
 autodoc:
 	-$(MKDIR) $(AUTODOC_OUTPUT_DIRECTORY)
-	pasdoc --staronly --output $(AUTODOC_OUTPUT_DIRECTORY) *.pas
+	$(AUTODOC) $(AUTODOCFLAGS) *.pas
 
+package: compile autodoc
+	-$(MKDIR) $(PACKAGING_OUTPUT_DIRECTORY)/$(PACKAGING_INSTALL_PREFIX)
+	$(CP) -r $(RUNTIME_OUTPUT_DIRECTORY) $(PACKAGING_OUTPUT_DIRECTORY)/$(PACKAGING_INSTALL_PREFIX)
+	$(CP) -r $(LIBRARY_OUTPUT_DIRECTORY) $(PACKAGING_OUTPUT_DIRECTORY)/$(PACKAGING_INSTALL_PREFIX)
+	$(CP) -r $(DOCUMENT_OUTPUT_DIRECTORY) $(PACKAGING_OUTPUT_DIRECTORY)/$(PACKAGING_INSTALL_PREFIX)
+	jar cvfM $(PROJECT_BINARY_DIR)/$(PACKAGE_NAME_PREFIX)-$(TARGET_NAME).zip -C $(PACKAGING_OUTPUT_DIRECTORY)/$(PACKAGE_INSTALL_PREFIX) .
