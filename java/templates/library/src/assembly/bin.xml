@@ -20,11 +20,27 @@
           <outputDirectory>lib</outputDirectory>
           <includes>
             <include>${project.build.finalName}.jar</include>
+            <include>${project.build.finalName}-debug.jar</include>
+            <include>${project.build.finalName}-jdk14.jar</include>
+          </includes>
+        </fileSet>
+        <fileSet>
+          <directory>${project.build.directory}</directory>
+          <outputDirectory></outputDirectory>
+          <includes>
+            <include>CHANGES.txt</include>
           </includes>
         </fileSet>
         <fileSet>
           <directory>${project.build.directory}/site/apidocs</directory>
           <outputDirectory>doc/apidocs</outputDirectory>
+        </fileSet>
+        <fileSet>
+          <directory>${project.build.directory}/pdf</directory>
+          <includes>
+            <include>*.pdf</include>
+          </includes>  
+          <outputDirectory>doc</outputDirectory>
         </fileSet>
       </fileSets>
     </assembly>

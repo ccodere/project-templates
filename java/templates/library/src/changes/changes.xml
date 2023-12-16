@@ -1,0 +1,14 @@
+<document xmlns="http://maven.apache.org/changes/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/changes/1.0.0 http://maven.apache.org/xsd/changes-1.0.0.xsd">
+  <properties>
+    <title>Noteworthy changes</title>
+  </properties>
+  <body>
+    <release version="0.0.2" description="First public release">
+      <action type="update">
+        Rearchitecture to conform to JSR 280 and compile with CDC Foundation profile classes.
+      </action>
+    </release>
+  </body>
+</document>

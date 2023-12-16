@@ -3,15 +3,12 @@
   xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="content-type" content="application/xhtml+xml; charset=iso-8859-1" />
-    <title>Configuration Management Plan</title>
+    <title></title>
   </head>
   <body>
     <h1>Configuration management</h1>
-    <h2 id="identification">Scope</h2>
-    <p>This document provides information rules, procedures and guides on how artifacts and work products are identified in this project as well as type of baselines and versioning information. </p>
-    <h2>Configuration identification</h2>
-    <p>The items (work products, artifacts) placed under configuration management (tracked, stored and versioned) as well as baselining through tagging are identified with the rules defined in the following sections.</p>
-<h3>Generic definitions</h3>
+    <h2 id="identification">Configuration identification</h2>
+  <h3>Generic definitions</h3>
     <p> Throughout this document, some definitions are reused, which are defined
 </p>
     <dl>
@@ -27,13 +24,13 @@
           MAJOR version, which indicates non interchangeable or incompatible
           breaking changes. A MINOR version increment indicates additional
           functionality while keeping backward compatibility, while the PATCH
-          version increment indicatess a bug or problem fix. See <cite>[<a href="https://semver.org/spec/v2.0.0.html">SEMVER2</a>]</cite>.</p>
+          version increment indicatess a bug or problem fix. See <cite>[SEMVER2]</cite>.</p>
         <p>A Snapshot label is appended to the project version, <samp>"-SNAPSHOT"</samp>
           when the software is not yet released and is still in development.
           This is equal to the maven version element.</p>
       </dd>
     </dl>
-  <h3>Baseline identification</h3>
+    <h3>Baseline identification</h3>
     <p>When a baseline needs to be identified, the baseline identifier shall
     follow the below rule:</p>
     <p><samp>baseline_identifier ::= &lt;project_version&gt;</samp></p>
@@ -51,7 +48,7 @@
     <p> The above form equivalent to the XMP AgentName <cite>[ISO-16684-1]</cite>.
     </p>
     <h3>Data package naming conventions</h3>
-    <p>The generic data package naming (main artifacts) conventions are as follows, as written in
+    <p>The generic data package naming conventions are as follows, as written in
     EBNF syntax:</p>
     <p> <samp>data_package_name ::= &lt;project_name&gt; "-"
       &lt;project_version&gt; "-" &lt;classifier&gt; "." &lt;suffix&gt;</samp></p>
@@ -78,31 +75,20 @@
       <dd>The data package suffix.This is context and project specific.</dd>
     </dl>
     <h2 id="baselines">Establishing a configuration baseline</h2>
-    <p>This section lists the different baselines that exist for this project as well as the rules associated with these baselines. </p>
-    <p>The projects only have two types of baseline available, the Production
+    <p>The projects only have one type of baseline available, the Production
       Baseline (PBL) for software to be used in production. This baseline
-      consists of the following actions being completed, and is allocated when the project is ready for release by the change configuration board (CCB):</p>
+      consists of the following actions being completed:</p>
     <ul>
       <li>A version description document is generated and is available</li>
       <li>Items under version control used for building the production data
         package and/or distribution archives are labeled/tagged with a label
         name equal to the &lt;project_name&gt;-&lt;project_version&gt;.</li>
-      <li>A software label identifying the version is available at runtime.</li>
       <li>Generated Data package and/or distribution archives are placed under
-        configuration management by being deployed to a production repository.</li>
+        configuration management by being archived or deployed.</li>
     </ul>
-    <p>The developmental baseline is used when a non-stable software code, which has minimal working functionality, needs to be released for testing or to a wider selected audience. This baseline can be allocated at any time that is deemed necessary by the Change Configuration Board. This baseline consists of the following:</p>
-    <ul>
-      <li>Generated Data package and/or distribution archives are placed under
-        configuration management by being deployed to a snapshot repository.</li>
-    </ul>
-<h2 id="accounting">Status accounting</h2>
-    <p>This section describes the schedule for generating configuration status reports as well as their contents. The current status reports are as follows:</p>
-    <ul>
-      <li>Version description document</li>
-    </ul>
-<h3>Version description document content</h3>
-    <p>A version description document shall contain the following information, available at each production baseline (PBL):</p>
+    <h2 id="accounting">Status accounting</h2>
+    <h3>Version description document content</h3>
+    <p>A version description document shall contain the following information, available at each production baseline:</p>
     <ul>
       <li>A brief statement of the purpose of the software and the environments
         to which this document applies.</li>
@@ -113,8 +99,9 @@
       <li>Installation or build instructions.</li>
       <li>Known issues and problems.</li>
     </ul>
-
-<table style="width: 100%;" border="1">
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <table style="width: 100%;" border="1">
       <thead>
         <tr>
           <td>Target name</td>
@@ -277,17 +264,12 @@
     <h1>Java projects</h1>
     <h2>General system requirements</h2>
     <p>The following requirements are needed to build and package the software:</p>
-    <h3>Software requirements</h3>
     <ul>
       <li>Java Development Kit 1.6 or later</li>
       <li>Maven version 3.2.5 or later.</li>
     </ul>
     <p>Java compilation follows the Maven 4.0.0 model. </p>
-    <h3>Hardware  requirements</h3>
-    <ul>
-      <li>At least 40 MiB of free hard disk space</li>
-    </ul>
-<h2>Build system configuration and overview</h2>
+    <h2>Build system configuration and overview</h2>
     <h3>Standard configuration</h3>
     <p>All java related projects automatically generate a standard MANIFEST.MF file which shall contain minimally the following information, if specified in the Maven project file:</p>
     
@@ -299,15 +281,18 @@
      <dt>Implementation-Version</dt>
      <dd>${project.version}</dd>
      <dt>Build_Target</dt>
-     <dd>The java runtime target    </dd>
+     <dd>The java runtime target</dd>
     </dl>
+    
+    <h3>Standard configuration</h3>
+    
     <p>The maven POM files contain different profiles by default. The different profiles are as follows:</p>
     
   <dl>
-     <dt>dev</dt>
-     <dd>Generates the release executable artifacts for deployment to a local repository with optimizations enabled and limited debugging information as well as API documentation in packaging required for repository deployment. This is the <em>default</em> active profile when building.</dd>
      <dt>release</dt>
-     <dd>Generates the release artifacts for deployment to the deployment repository with optimization, signing and limited debugging information as well as generic source, binary and documentation packages for local web site distribution. </dd>
+     <dd>Generates the release artifacts for deployment to a local repository with optimization and limited debugging information. This is the <em>default</em> active profile when building.</dd>
+     <dt>release-sign</dt>
+     <dd>Generates the release artifacts for deployment to the maven central repository with optimization, signing and limited debugging information as well as generic source, binary and documentation packages for local web site distribution. </dd>
      <dt>debug</dt>
      <dd>Generates the debug executable artifacts with the <code>debug</code> classifier for local repository deployment with full debugging information.</dd>
     <dt>jdk14</dt>
@@ -325,16 +310,15 @@
      <dd>This property sets the key ID used for signing the artifacts.</dd>
     </dl>
     
-    <h2>Build procedure</h2>
+    <h3>Build procedure</h3>
     
     <p>The following steps should be followed for project building and deployment:</p>
     
     <ol> 
-      <li>Execute <code>mvn install</code> to build and install the <code>dev</code> profile package for day to day development.</li>
-      <li>Execute <code>mvn -P debug install</code> to build and install the <code>debug</code> profile packages.</li>
-      <li>Execute <code>mvn -P jdk14 install</code> to build and install the JDK 1.4 profile packages.</li>
-      <li>Execute <code>mvn site</code> to build and create the documentation associated with the project.</li>
-      <li>Execute <code>mvn -P release package</code> to generate and sign the standard release artfiacts, as well as creating independently package installable release artifacts.</li>
+      <li>Execute <code>mvn install</code> to build and install the standard release artifacts to the local repository.</li>
+      <li>Execute <code>mvn -P debug install</code> to build and install the debug artifacts to the local repository.</li>
+      <li>Execute <code>mvn -P jdk14 install</code> to build and install the JDK 1.4 compatible artifacts.</li>
+      <li>Execute <code>mvn -P release-sign package</code> to generate anf sign the standard release artfiacts, as well as creating an independently package installable release artifacts.</li>
     </ol>
     
 <h1>Native projects (C and pascal)</h1>

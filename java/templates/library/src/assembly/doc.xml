@@ -4,11 +4,11 @@
   <formats>
     <format>zip</format>
   </formats>
-  <includeBaseDirectory>true</includeBaseDirectory>
+  <includeBaseDirectory>false</includeBaseDirectory>
   <fileSets>
     <fileSet>
       <directory>${project.build.directory}/site/apidocs</directory>
-	  <outputDirectory>apidocs</outputDirectory>
+      <outputDirectory>/</outputDirectory>
     </fileSet>
   </fileSets>
 </assembly>

@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- Project configuration for java based projects, it may
+     need to be adapted accordingly depending on the target. The 
+     following should be configured accordingly:
+     
+     1. maven-compiler-plugin configuration should be adapted
+     accordingly, depending if we need to target CDC or standard
+     Java Development kits or retrotranslation to 1.4 (In the two latter cases path 
+     to JDK 1.4 compiler can be removed). maven.compiler.target and
+     maven.compiler.source should be adapted accordingly.
+     2. animal-sniffer-maven-plugin should point to the correct
+     API signature to check against, or can be removed if no 
+     API compatibility check is required.
+     3. If this is not used as a parent POM of a multi-module project
+     then maven-assembly-plugin and maven-changes-plugin in build/plugins
+     section should be removed and all pluginManagement elements be removed from
+     the release profile.
+     
+-->     
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -7,12 +26,10 @@
 	<groupId><!-- FIXME --></groupId>
 	<artifactId><!-- FIXME --></artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-
 	<name></name>
-	<url></url>
-	<inceptionYear></inceptionYear>
 	<description></description>
-
+	<inceptionYear></inceptionYear>
+	<url></url>
 
 	<licenses>
 		<license>
@@ -53,42 +70,71 @@
 	</scm>
 
 	<!-- The location where the data will be distributed. Keep as is for Sonatype Maven central -->
+	<!-- The location where the data will be distributed -->
 	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
 		</snapshotRepository>
 		<repository>
 			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
+	
+	
+	<repositories>
+	    <repository>
+	      <id>snapshots</id>
+	      <name>OSSRH Public snapshot repository</name>
+	      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+	    </repository>
+  </repositories>
+
 
 	<properties>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
+	  <!-- 
+<!--		<maven.compiler.source>1.5</maven.compiler.source>
+		<maven.compiler.target>1.5</maven.compiler.target> !-->
 		<!--  Key ID used for artifact signing -->
 		<gpg.keyname>5D6CFCC7</gpg.keyname>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
 	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>net.sf.retrotranslator</groupId>
+				<artifactId>retrotranslator-transformer</artifactId>
+				<version>${version.retrotranslator-transformer}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	
 
 
-
-	<!-- These are the default profiles supported: 1) release: The default, which 
+	<!-- These are the default profiles supported: 1) dev: The default, which 
 		contains minimal debug information for stack tracing and debugging if source 
-		code is available. 2) archive: Used to build and generate artifacts that are 
-		for manual deployments (both through maven install) 3) debug: Uses debug classifier 
-		and contains full debug information for debug information. 4) jdk14 : The 
+		code is available. 2) release: Used to build and generate artifacts that are 
+		for manual deployments as well as repository deployment 3) debug: Uses debug classifier 
+		and contains full debug information for debuggung. 4) jdk14 : The 
 		java 1.4 class formats, compatible with CDC Foundation Profile for embedded 
-		use. Requires java SDK 1.5 to be installed. Normally the following should 
-		be done to generate and install all artifacts: 1. mvn install 2. mvn -P jdk14 
-		install 3. mvn -P archive package 
+		use. Requires to use target 1.5.
 		-->
 	<profiles>
 		<profile>
-			<id>release</id>
+			<id>dev</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
@@ -96,207 +142,20 @@
 				<maven.compiler.debug>true</maven.compiler.debug>
 				<maven.compiler.debuglevel>lines,source</maven.compiler.debuglevel>
 				<maven.compiler.optimize>true</maven.compiler.optimize>
+				<maven.javadoc.skip>false</maven.javadoc.skip>
+				<maven.source.skip>true</maven.source.skip>
+				<assembly.skipAssembly>true</assembly.skipAssembly>
 				<project.build.directory.classes>${project.build.directory}/classes</project.build.directory.classes>
 				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
-     		    <jar.classifier></jar.classifier>
-				<build.target>${maven.compiler.target}</build.target>
-			</properties>
-			<build>
-			<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<configuration>
-					<failOnError>false</failOnError>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
-						<goals>
-							<goal>javadoc</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.1</version>
-				<configuration>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-				
-			</plugins>
-			</build>
-		</profile>
-		
-		<profile>
-			<id>release-sign</id>
-			<properties>
-				<maven.compiler.debug>true</maven.compiler.debug>
-				<maven.compiler.debuglevel>lines,source</maven.compiler.debuglevel>
-				<maven.compiler.optimize>true</maven.compiler.optimize>
-				<project.build.directory.classes>${project.build.directory}/classes</project.build.directory.classes>
-				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
-     		    <jar.classifier></jar.classifier>
-				<build.target>${maven.compiler.target}</build.target>
-			</properties>
-			<build>
-			<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<configuration>
-					<failOnError>false</failOnError>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
-						<goals>
-							<goal>javadoc</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.1</version>
-				<configuration>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.5</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-          				<configuration>
-							<keyname>${gpg.keyname}</keyname>
-							<passphraseServerId>${gpg.keyname}</passphraseServerId>
-          				</configuration>						
-					</execution>
-				</executions>
-			</plugin>
-			
-			</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>archive</id>
-			<properties>
-				<maven.compiler.debug>true</maven.compiler.debug>
-				<maven.compiler.debuglevel>lines,source</maven.compiler.debuglevel>
-				<maven.compiler.optimize>true</maven.compiler.optimize>
-				<project.build.directory.classes>${project.build.directory}/classes</project.build.directory.classes>
-				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
-     		    <jar.classifier></jar.classifier>
-				<build.target>${maven.compiler.target}</build.target>
-			</properties>
-			<build>
-			<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<configuration>
-					<failOnError>false</failOnError>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
-						<goals>
-							<goal>javadoc</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.0.0</version>
-				<configuration>
-					<descriptors>
-						<descriptor>${project.basedir}/src/assembly/src.xml</descriptor>
-						<descriptor>${project.basedir}/src/assembly/bin.xml</descriptor>
-						<descriptor>${project.basedir}/src/assembly/doc.xml</descriptor>
-					</descriptors>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			</plugins>
-			</build>
-		</profile>
-		
-		<profile>
-			<id>debug</id>
-			<properties>
-				<maven.compiler.debug>true</maven.compiler.debug>
-				<project.build.directory.classes>${project.build.directory}/classes-debug</project.build.directory.classes>
-				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
-     		    <jar.classifier>debug</jar.classifier>
+				<jar.classifier></jar.classifier>
 				<build.target>${maven.compiler.target}</build.target>
 			</properties>
 		</profile>
 		<profile>
 		    <!-- When this profile is activated, it builds for JDK1.4 class format,
-		         it also checks with Animal sniffer for methods and classes not
-		         present in some profiles (CDC FP, JDK1.4, etc.) -->
+				it also checks with Animal sniffer for methods and classes not present in 
+				some profiles (CDC FP, JDK1.4, etc.). It uses retrotranslator to convert 1.5 class format
+				compatible with 1.4 -->
 			<id>jdk14</id>
 			<properties>
 				<maven.compiler.source>1.5</maven.compiler.source>
@@ -345,19 +204,106 @@
 							</dependency>
 						</dependencies>
 					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>debug</id>
+			<properties>
+				<maven.compiler.debug>true</maven.compiler.debug>
+				<maven.compiler.optimize>false</maven.compiler.optimize>
+				<maven.javadoc.skip>true</maven.javadoc.skip>
+				<maven.source.skip>true</maven.source.skip>
+				<assembly.skipAssembly>true</assembly.skipAssembly>
+				<project.build.directory.classes>${project.build.directory}/classes-debug</project.build.directory.classes>
+				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
+				<jar.classifier>debug</jar.classifier>
+				<build.target>${maven.compiler.target}</build.target>
+			</properties>
+		</profile>
+		<profile>
+			<id>release</id>
+			<properties>
+				<maven.compiler.debug>true</maven.compiler.debug>
+				<maven.compiler.debuglevel>lines,source</maven.compiler.debuglevel>
+				<maven.compiler.optimize>true</maven.compiler.optimize>
+				<maven.javadoc.skip>false</maven.javadoc.skip>
+				<maven.source.skip>false</maven.source.skip>
+				<assembly.skipAssembly>false</assembly.skipAssembly>
+				<project.build.directory.classes>${project.build.directory}/classes</project.build.directory.classes>
+				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
+				<jar.classifier></jar.classifier>
+				<build.target>${maven.compiler.target}</build.target>
+			</properties>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-changes-plugin</artifactId>
+							<version>2.12.1</version>
+							<executions>
+								<execution>
+									<id>include-announcement-file</id>
+									<phase>prepare-package</phase>
+									<goals>
+										<goal>announcement-generate</goal>
+									</goals>
+									<configuration>
+										<announcementFile>CHANGES.txt</announcementFile>
+										<announcementDirectory>${project.build.directory}</announcementDirectory>
+									</configuration>
+								</execution>
+							</executions>
+						</plugin>
 
-					<!-- Permits to check against CDC FP 1.1 with JSR 280 API compatibility -->
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-assembly-plugin</artifactId>
+							<version>3.0.0</version>
+							<configuration>
+								<descriptorRefs>
+									<descriptorRef>src</descriptorRef>
+								</descriptorRefs>
+								<descriptors>
+									<descriptor>${project.basedir}/src/assembly/bin.xml</descriptor>
+									<descriptor>${project.basedir}/src/assembly/doc.xml</descriptor>
+								</descriptors>
+								<attach>false</attach>
+							</configuration>
+							<executions>
+								<execution>
+									<id>make-assembly</id> <!-- this is used for inheritance merges -->
+									<phase>package</phase> <!-- bind to the packaging phase -->
+									<goals>
+										<goal>single</goal>
+									</goals>
+								</execution>
+							</executions>
+						</plugin>
+
+					</plugins>
+				</pluginManagement>
+
+				<plugins>
+					<!-- Permits to check against API compatibility issues -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>animal-sniffer-maven-plugin</artifactId>
 						<version>1.8</version>
 						<configuration>
+						  <!-- ADAPT HERE ACCORDINGLY -->
+						  <!--
 							<signature>
 								<groupId>com.optimasc.signatures</groupId>
 								<artifactId>cdc11fpxml</artifactId>
-								<version>1.0-SNAPSHOT</version>
+								<version>1.0.0-SNAPSHOT</version>
+							</signature> -->
+							<signature>
+								<groupId>org.codehaus.mojo.signature</groupId>
+								<artifactId>java15</artifactId>
+								<version>1.0</version>
 							</signature>
-							<outputDirectory>${project.build.outputDirectory.retrotranslated14}</outputDirectory>
 						</configuration>
 						<executions>
 							<execution>
@@ -369,30 +315,30 @@
 							</execution>
 						</executions>
 					</plugin>
+				
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.5</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+								<configuration>
+									<keyname>${gpg.keyname}</keyname>
+									<passphraseServerId>${gpg.keyname}</passphraseServerId>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>
 	</profiles>
-
-
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>net.sf.retrotranslator</groupId>
-				<artifactId>retrotranslator-transformer</artifactId>
-				<version>${version.retrotranslator-transformer}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+	
 
 
 	<build>
@@ -410,10 +356,13 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
+				<version>2.5.1</version>
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
+					<!-- This should be commented out to only use the default installed toolchain !-->
+                    <fork>true</fork>
+                    <executable>${JAVA_1_4_HOME}/bin/javac</executable>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -427,18 +376,17 @@
 					<archive>
 						<addMavenDescriptor>false</addMavenDescriptor>
 						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>../lib/</classpathPrefix>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
-                  <manifestEntries>
+                          <manifestEntries>
 							<Build_Target>${build.target}</Build_Target>
-                  </manifestEntries>                  
+                         </manifestEntries>                  
 					</archive>
 					<classifier>${jar.classifier}</classifier>
 					<classesDirectory>${project.build.outputDirectory.classes.jar}</classesDirectory>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<artifactId>maven-install-plugin</artifactId>
 				<version>2.5.2</version>
@@ -447,54 +395,18 @@
 				<artifactId>maven-deploy-plugin</artifactId>
 				<version>2.8.2</version>
 			</plugin>
-			<!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
 			<plugin>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.5.1</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.9</version>
 			</plugin>
 
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.9</version>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/lib</outputDirectory>
-							<includeScope>compile</includeScope>
-						</configuration>
-					</execution>
-				</executions>
+				<version>3.0.1</version>
 			</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.5</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-          				<configuration>
-							<keyname>${gpg.keyname}</keyname>
-							<passphraseServerId>${gpg.keyname}</passphraseServerId>
-          				</configuration>						
-					</execution>
-				</executions>
-			</plugin>
 
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
@@ -520,9 +432,98 @@
 							<goal>pdf</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.reporting.outputDirectory}</outputDirectory>
 							<includeReports>false</includeReports>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<configuration>
+					<failOnError>false</failOnError>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>prepare-package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>javadoc</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>make-site-javadoc</id> <!-- this is used for inheritance merges -->
+						<phase>site</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>javadoc</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
+				<configuration>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.1</version>
+				<configuration>
+					<releaseProfiles>release</releaseProfiles>
+				</configuration>
+			</plugin>
+
+            <!--  These plugins override the pluginmanagement sections, and are assigned
+                  non-existent phases so they will never execute at this level. -->
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<inherited>false</inherited>
+				<configuration>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>null</phase> <!-- bind to the packaging phase -->
+					</execution>
+				</executions>
+			</plugin>
+
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changes-plugin</artifactId>
+				<inherited>false</inherited>
+				<executions>
+					<execution>
+						<id>include-announcement-file</id>
+						<phase>null</phase>
+						<goals>
+							<goal>announcement-generate</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
@@ -565,8 +566,22 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
-				<configuration>
-				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changes-plugin</artifactId>
+				<version>2.12.1</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>changes-report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.9</version>
 			</plugin>
 		</plugins>
 	</reporting>
