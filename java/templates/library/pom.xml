@@ -4,15 +4,7 @@
      need to be adapted accordingly depending on the target. The 
      following should be configured accordingly:
      
-     1. maven-compiler-plugin configuration should be adapted
-     accordingly, depending if we need to target CDC or standard
-     Java Development kits or retrotranslation to 1.4 (In the two latter cases path 
-     to JDK 1.4 compiler can be removed). maven.compiler.target and
-     maven.compiler.source should be adapted accordingly.
-     2. animal-sniffer-maven-plugin should point to the correct
-     API signature to check against, or can be removed if no 
-     API compatibility check is required.
-     3. If this is not used as a parent POM of a multi-module project
+     1. If this is not used as a parent POM of a multi-module project
      then maven-assembly-plugin and maven-changes-plugin in build/plugins
      section should be removed and all pluginManagement elements be removed from
      the release profile.
@@ -69,7 +61,6 @@
         <url>https://github.com/ccodere/DTDParser/tree/main</url>
 	</scm>
 
-	<!-- The location where the data will be distributed. Keep as is for Sonatype Maven central -->
 	<!-- The location where the data will be distributed -->
 	<distributionManagement>
 		<snapshotRepository>
@@ -93,9 +84,13 @@
 
 
 	<properties>
-	  <!-- 
-<!--		<maven.compiler.source>1.5</maven.compiler.source>
-		<maven.compiler.target>1.5</maven.compiler.target> !-->
+		<!-- Default compilation target: JDK 1.6 bytecode.
+		     For dev/debug/release profiles any JDK from 1.6 up to 21 is sufficient.
+		     For the release profile, a JDK 1.6 toolchain entry in settings.xml is
+		     required to produce genuine 1.6 bytecode on modern JDKs (21+ dropped
+		     support for -source/-target 1.6). See Build Instructions for details. -->
+		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
 		<!--  Key ID used for artifact signing -->
 		<gpg.keyname>5D6CFCC7</gpg.keyname>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -128,9 +123,7 @@
 		contains minimal debug information for stack tracing and debugging if source 
 		code is available. 2) release: Used to build and generate artifacts that are 
 		for manual deployments as well as repository deployment 3) debug: Uses debug classifier 
-		and contains full debug information for debuggung. 4) jdk14 : The 
-		java 1.4 class formats, compatible with CDC Foundation Profile for embedded 
-		use. Requires to use target 1.5.
+		and contains full debug information for debuggung. 
 		-->
 	<profiles>
 		<profile>
@@ -150,62 +143,6 @@
 				<jar.classifier></jar.classifier>
 				<build.target>${maven.compiler.target}</build.target>
 			</properties>
-		</profile>
-		<profile>
-		    <!-- When this profile is activated, it builds for JDK1.4 class format,
-				it also checks with Animal sniffer for methods and classes not present in 
-				some profiles (CDC FP, JDK1.4, etc.). It uses retrotranslator to convert 1.5 class format
-				compatible with 1.4 -->
-			<id>jdk14</id>
-			<properties>
-				<maven.compiler.source>1.5</maven.compiler.source>
-				<maven.compiler.target>1.5</maven.compiler.target>
-     		    <version.retrotranslator-transformer>1.2.9</version.retrotranslator-transformer>
-     		    <jar.classifier>jdk14</jar.classifier>
-				<project.build.directory.classes>${project.build.directory}/classes-jdk15</project.build.directory.classes>
-				<project.build.outputDirectory.retrotranslated14>${project.build.directory}/classes-jdk14</project.build.outputDirectory.retrotranslated14>
-				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.retrotranslated14}</project.build.outputDirectory.classes.jar>
-				<build.target>1.4</build.target>
-			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<version>1.8</version>
-						<executions>
-							<execution>
-								<id>retrotranslated14</id>
-								<phase>process-classes</phase>
-								<goals>
-									<goal>run</goal>
-								</goals>
-								<configuration>
-									<target>
-										<taskdef name="retrotranslator"
-											classname="net.sf.retrotranslator.transformer.RetrotranslatorTask"
-											classpathref="maven.plugin.classpath" />
-										<mkdir dir="${project.build.outputDirectory.retrotranslated14}" />
-										<retrotranslator srcdir="${project.build.outputDirectory}"
-											destdir="${project.build.outputDirectory.retrotranslated14}"
-											failonwarning="true" smart="true" stripannot="true"
-											stripsign="true" syncvolatile="true" target="1.4" verbose="true"
-											verify="false">
-										</retrotranslator>
-									</target>
-								</configuration>
-							</execution>
-						</executions>
-						<dependencies>
-							<dependency>
-								<groupId>net.sf.retrotranslator</groupId>
-								<artifactId>retrotranslator-transformer</artifactId>
-								<version>1.2.9</version>
-							</dependency>
-						</dependencies>
-					</plugin>
-				</plugins>
-			</build>
 		</profile>
 		<profile>
 			<id>debug</id>
@@ -286,6 +223,29 @@
 				</pluginManagement>
 
 				<plugins>
+					<!-- Enforce JDK 1.6 toolchain for release builds.
+					     Contributors must have an entry in ~/.m2/settings.xml declaring
+					     a JDK 1.6 toolchain (e.g. Azul Zulu 6). This ensures genuine
+					     1.6 bytecode on modern JDKs (21+) that dropped -source/-target 1.6
+					     support. Not required for dev/debug profiles. -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-toolchains-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<execution>
+								<goals><goal>toolchain</goal></goals>
+							</execution>
+						</executions>
+						<configuration>
+							<toolchains>
+								<jdk>
+									<version>1.6</version>
+								</jdk>
+							</toolchains>
+						</configuration>
+					</plugin>
+
 					<!-- Permits to check against API compatibility issues -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
@@ -319,7 +279,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.5</version>
+						<version>1.6</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -360,9 +320,9 @@
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
-					<!-- This should be commented out to only use the default installed toolchain !-->
-                    <fork>true</fork>
-                    <executable>${JAVA_1_4_HOME}/bin/javac</executable>
+					<!-- No fork/executable needed: dev/debug use whatever JDK is installed.
+					     The release profile activates a toolchain that supplies an actual
+					     JDK 1.6 binary so genuine 1.6 bytecode is produced on modern JDKs. -->
 				</configuration>
 			</plugin>
 			<plugin>
@@ -399,15 +359,11 @@
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.5.1</version>
 			</plugin>
-
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>3.0.1</version>
 			</plugin>
-
-
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
@@ -419,7 +375,6 @@
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pdf-plugin</artifactId>
@@ -512,7 +467,6 @@
 			</plugin>
 
 
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-changes-plugin</artifactId>
@@ -587,4 +541,3 @@
 	</reporting>
 
 </project>
-

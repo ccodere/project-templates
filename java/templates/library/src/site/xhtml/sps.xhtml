@@ -6,9 +6,10 @@
     <title>Configuration Management Plan</title>
   </head>
   <body>
-    <h1>Build instructions</h1>
-    <h2>Main Targets and phases</h2>
-  <p>This provides information on the different build phases available</p>
+    <h1>Software product specifications</h1>
+    <h2>Build instructions</h2>
+    <h3>Main Targets and phases</h3>
+<p>This provides information on the different build phases available</p>
     <dl>
       <dt>clean</dt>
       <dd>
@@ -60,39 +61,73 @@
           directories where files are installed. </p>
       </dd>
     </dl>
-<h2>General system requirements</h2>
-    <p>The following requirements are needed to build and package the software:</p>
-    <h3>Software requirements</h3>
+  <h3>General system requirements</h3>
+  <p>The following requirements are needed to build and package the software:</p>
+    <h4>Software requirements</h4>
     <ul>
-      <li>Java Development Kit 1.6 or later</li>
       <li>Maven version 3.2.5 or later.</li>
+      <li>Java Development Kit requirements depend on the build profile:
+        <ul>
+          <li><strong>dev and debug profiles (default):</strong> Any JDK from 1.6 up to and
+          including JDK 17 is sufficient. Note that JDK 21 and later removed support for
+          compiling with <code>-source 1.6 / -target 1.6</code> and will produce a hard
+          error. Contributors using JDK 21 or later should install JDK 17 (recommended:
+          Azul Zulu 17, freely available at <code>https://www.azul.com/downloads/</code>),
+          or override the compiler target temporarily on the command line:
+          <code>mvn install -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8</code></li>
+          <li><strong>release profile:</strong> Requires a JDK 1.6 installation declared as a
+          Maven toolchain in <code>settings.xml</code> (see Build Preparation below). The
+          recommended source is Azul Zulu 6, freely available at
+          <code>https://www.azul.com/downloads/</code>. The toolchain ensures genuine
+          JDK 1.6 bytecode output regardless of the JDK used to invoke Maven.</li>
+        </ul>
+      </li>
     </ul>
 <p>Java compilation follows the Maven 4.0.0 model. </p>
-    <h3>Hardware  requirements</h3>
+    <h4>Hardware requirements</h4>
     <ul>
       <li>At least 64 MiB of free hard disk space</li>
     </ul>
-<h2>Build system configuration and overview</h2>
-    <h3>Build preparation</h3>
-    <p>If the package needs to be deployed then them maven <code>settings.xml</code> file in the <code>.m12</code> directory  should contain the credentials to deploy to the remove repository, for example, to deploy to ossrh server:<code>
-    </code></p>
+  <h3>Build system configuration and overview</h3>
+  <h4>Build preparation</h4>
+    <p>If the package needs to be deployed then them maven <code>settings.xml</code> file in the <code>.m2</code> directory  should contain the credentials to deploy to the remove repository, for example, to deploy to ossrh server:</p>
+    <p>
   <code>
-    <p> &lt;servers&gt;<br />
+&lt;servers&gt;<br />
 &lt;server&gt;<br />
 &lt;id&gt;ossrh&lt;/id&gt;<br />
 &lt;username&gt;TheUserName&lt;/username&gt;<br />
 &lt;password&gt;ThePassword&lt;/password&gt;<br />
-&lt;/server&gt;</p>
+&lt;/server&gt;
     &lt;id&gt;github.com&lt;/id&gt;<br />
 &lt;username&gt;TheUserName&lt;/username&gt;<br />
 &lt;password&gt;ThePassword&lt;/password&gt;<br />
 &lt;/server&gt;<br />
-<p><br />
-  &lt;/servers&gt;</p>
+<br />&lt;/servers&gt;
+  </code></p>
+  <p>To build the <code>release</code> profile, the same <code>settings.xml</code> file must
+  also declare a JDK 1.6 toolchain so that Maven can locate the correct compiler. Without this
+  entry, the <code>release</code> profile will fail with a toolchain resolution error. The
+  toolchain entry is <em>not</em> required for the <code>dev</code>, <code>debug</code>, or
+  <code>jdk14</code> profiles. Add the following <code>&lt;toolchains&gt;</code> block to
+  <code>~/.m2/settings.xml</code>, adjusting the path to match the actual JDK 1.6 installation
+  on the build machine (Azul Zulu 6 is recommended, see Software Requirements above):</p>
+  <p>
+  <code>
+    &lt;toolchains&gt;<br />
+    &#160;&#160;&lt;toolchain&gt;<br />
+    &#160;&#160;&#160;&#160;&lt;type&gt;jdk&lt;/type&gt;<br />
+    &#160;&#160;&#160;&#160;&lt;provides&gt;<br />
+    &#160;&#160;&#160;&#160;&#160;&#160;&lt;version&gt;1.6&lt;/version&gt;<br />
+    &#160;&#160;&#160;&#160;&lt;/provides&gt;<br />
+    &#160;&#160;&#160;&#160;&lt;configuration&gt;<br />
+    &#160;&#160;&#160;&#160;&#160;&#160;&lt;jdkHome&gt;/path/to/jdk1.6&lt;/jdkHome&gt;<br />
+    &#160;&#160;&#160;&#160;&lt;/configuration&gt;<br />
+    &#160;&#160;&lt;/toolchain&gt;<br />
+    &lt;/toolchains&gt;<br />
   </code>
   </p>
-
-    <h3>Standard configuration</h3>
+  <h4>Standard configuration</h4>
   <p>All java related projects automatically generate a standard MANIFEST.MF file which shall contain minimally the following information, if specified in the Maven project file:</p>
     
     <dl>
@@ -114,33 +149,31 @@
      <dd>Generates the release artifacts for deployment to the deployment repository with optimization, signing and limited debugging information as well as generic source, binary and documentation packages for local web site distribution. </dd>
      <dt>debug</dt>
      <dd>Generates the debug executable artifacts with the <code>debug</code> classifier for local repository deployment with full debugging information.</dd>
-    <dt>jdk14</dt>
-     <dd>Generates the debug executable artifacts specifically targeting class file format 48 (JDK 1.4) with the <code>jdk14</code> classifier for deployment to a maven central repository. This is mainly used to target older systems, such CDC Foundation Profile. When running this profile, it requires JDK 1.5 to build, and uses the retrotranslator project tool to convert back to class file format compatible with JDK 1.4. It also verifies that no API outside of the specified available API's (for example: CDC Foundation profile) is used. </dd>
+    <dt>&nbsp;</dt>
   </dl>
   
-  <p>The following properties may be modified to change some of the options:</p>
+<p>The following properties may be modified to change some of the options:</p>
     
     <dl>
      <dt>maven.compiler.source</dt>
-     <dd>This property sets the source version for compilation. Applies to all profiles, except <code>jdk14</code></dd>
+     <dd>This property sets the source version for compilation. Applies to all profiles.</dd>
      <dt>maven.compiler.target</dt>
-     <dd>This property sets the target version for compilation. Applies to all profiles, except <code>jdk14</code></dd>
+     <dd>This property sets the target version for compilation. Applies to all profiles.</dd>
      <dt>gpg.keyname</dt>
      <dd>This property sets the key ID used for signing the artifacts.</dd>
     </dl>
     
-    <h2>Build procedure</h2>
+    <h3>Build procedure</h3>
     
-    <p>The following steps should be followed for project building:</p>
+  <p>The following steps should be followed for project building:</p>
     
     <ol> 
       <li>Execute <code>mvn install</code> to build and install the <code>dev</code> profile package for day to day development.</li>
       <li>Execute <code>mvn -P debug install</code> to build and install the <code>debug</code> profile packages.</li>
-      <li>Execute <code>mvn -P jdk14 install</code> to build and install the JDK 1.4 profile packages.</li>
       <li>Execute <code>mvn site</code> to build and create the documentation associated with the project.</li>
       <li>Execute <code>mvn -P release package</code> to generate and sign the standard release artfiacts, as well as creating independently package installable release artifacts.</li>
     </ol>
-  <h2>Release procedure</h2>
+  <h3>Release procedure</h3>
   <p>To deploy a release, the following steps should be followed:</p>
   <ol>
     <li>Update <code>/src/changes/changes.xml</code> by doing the following:
@@ -152,13 +185,12 @@
     <li>Execute <code>mvn clean</code></li>
     <li>Execute <code>mvn install</code> to build and install the <code>dev</code> profile package for day to day development.</li>
     <li>Execute <code>mvn -P debug install</code> to build and install the <code>debug</code> profile packages.</li>
-    <li>Execute <code>mvn -P jdk14 install</code> to build and install the JDK 1.4 profile packages.</li>
     <li>Execute <code>mvn site</code> to build and create the documentation associated with the project.</li>
     <li>Execute <code>mvn -P release package</code> to generate and sign the standard release artfiacts, as well as creating independently package installable release artifacts.</li>
-    <li>Execute <code>mvm release:prepare -DDryRun=true</code> </li>
-    <li>Execute <code>mvm release:perform -DDryRun=true</code> </li>
-    <li>Execute <code>mvm release:prepare</code> </li>
-    <li>Execute <code>mvm release:perform</code> </li>
+    <li>Execute <code>mvn release:prepare -DdryRun=true</code> </li>
+    <li>Execute <code>mvn release:perform -DdryRun=true</code> </li>
+    <li>Execute <code>mvn release:prepare</code> </li>
+    <li>Execute <code>mvn release:perform</code> </li>
   </ol>
   <p>&nbsp;</p>
 </body>
