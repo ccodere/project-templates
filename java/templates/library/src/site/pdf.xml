@@ -9,7 +9,8 @@
       </meta>
      
       <toc name="Table of Contents">
-        <item name="Introduction" ref="index.xhtml"/>
+        <item name="Introduction" ref="index.xhtml.vm"/>
+        <item name="Building" ref="BUILDING.md"/>
 <!--        
         <item name="Usage" ref="usage.xhtml"/>
         <item name="Limitations" ref="limitations.xhtml"/> -->

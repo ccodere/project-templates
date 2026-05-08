@@ -15,8 +15,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId><!-- FIXME --></groupId>
-	<artifactId><!-- FIXME --></artifactId>
+
+    <!--        FIX ME          -->
+    <groupId>com.optimasc.test</groupId>
+    <artifactId>hello-test</artifactId>
+    <!--                        -->
 	<version>0.0.1-SNAPSHOT</version>
 	<name></name>
 	<description></description>
@@ -56,7 +59,7 @@
 
 	<!-- The repository locations. Private values are allowed. -->
 	<scm>
-		<connection>https://github.com/ccodere/DTDParser.git</connection>
+		<connection>scm:git:ssh://github.com:ccodere/DTDParser.git</connection>
 		<developerConnection>scm:git:ssh://github.com:ccodere/DTDParser.git</developerConnection>
         <url>https://github.com/ccodere/DTDParser/tree/main</url>
 	</scm>
@@ -107,15 +110,6 @@
 		</dependency>
 	</dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>net.sf.retrotranslator</groupId>
-				<artifactId>retrotranslator-transformer</artifactId>
-				<version>${version.retrotranslator-transformer}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	
 
 
@@ -265,15 +259,6 @@
 								<version>1.0</version>
 							</signature>
 						</configuration>
-						<executions>
-							<execution>
-								<id>retrotranslated14</id>
-								<phase>process-classes</phase>
-								<goals>
-									<goal>check</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
 				
 					<plugin>
@@ -378,7 +363,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pdf-plugin</artifactId>
-				<version>1.4</version>
+				<version>1.6.2</version>
 				<executions>
 					<execution>
 						<id>pdf</id>
