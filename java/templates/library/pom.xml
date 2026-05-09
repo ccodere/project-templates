@@ -11,17 +11,17 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId><!-- FIXME --></groupId>
-	<artifactId><!-- FIXME --></artifactId>
+	<groupId><!-- FIXME Project GroupID --></groupId>
+	<artifactId><!-- FIXME Project ArtifactID --></artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name></name>
-	<description></description>
-	<inceptionYear></inceptionYear>
-	<url></url>
+	<name><!-- FIXME Project short name --></name>
+	<description><!-- FIXME Short human-readable description of the project --></description>
+	<inceptionYear><!-- FIXME The year the project was first created. --></inceptionYear>
+	<url><!-- FIXME Project home page --></url>
 
 	<licenses>
 		<license>
-			<!-- The license identifier, as defined by SPDX -->
+			<!-- FIXME The license identifier, as defined by SPDX -->
 			<name>Apache-2.0</name>
 			<url>${project.basedir}/LICENSE.txt</url>
 		</license>
@@ -41,6 +41,7 @@
 
 	<!-- List of contributors to this project -->
 	<contributors>
+		<!-- FIXME Add list of contributors -->
 	</contributors>
 
 	<!-- List of organization associated with this project -->
@@ -50,43 +51,62 @@
 	</organization>
 
 
-	<!-- The repository locations. Private values are allowed. -->
+	<!-- The location of the source code under version control. Private values 
+		are allowed. -->
 	<scm>
-		<connection>https://github.com/ccodere/DTDParser.git</connection>
-		<developerConnection>scm:git:ssh://github.com:ccodere/DTDParser.git</developerConnection>
+		<!-- FIXME Read access for Maven to be able to retrieve the source code -->
+		<connection>scm:git:https://github.com/ccodere/DTDParser.git</connection>
+		<!-- FIXME Read access for Maven to be able to update the source code -->
+		<developerConnection>scm:git:https://github.com/my-org/my-project.git</developerConnection>
+		<!-- FIXME Read access for Maven to be able to update the source code -->
 		<url>https://github.com/ccodere/DTDParser/tree/main</url>
 	</scm>
 
-	<!-- The location where the data will be distributed -->
-   <repositories>
-      <repository>
-       <id>sonatype-snapshots</id>
-       <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-       <releases><enabled>false</enabled></releases>
-       <snapshots><enabled>true</enabled></snapshots>
-     </repository>
-   </repositories>	
-	
+	<!-- The location of repositories -->
+	<repositories>
+		<repository>
+			<id>sonatype-snapshots</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+
+	<distributionManagement>
+		<site>
+			<!-- FIXME Adapt site web site deployment -->
+			<id>www.optimasc.com</id>
+			<url>scp://www.optimasc.com/www/docs/project/</url>
+		</site>
+	</distributionManagement>
+
 
 
 	<properties>
 		<!-- Default compilation target: JDK 1.8 bytecode which is compatible with 
-			all recent JDK's, the release and debug profile will actually generate java 
-			bytecode specific per the project requirement. -->
+			all recent JDK's, the release profile will actually generate java bytecode 
+			specific per the project requirement. -->
 
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.testSource>1.8</maven.compiler.testSource>
-        <maven.compiler.testTarget>1.8</maven.compiler.testTarget>		
+		<maven.compiler.testSource>1.8</maven.compiler.testSource>
+		<maven.compiler.testTarget>1.8</maven.compiler.testTarget>
 		<!-- Disable the annotation processor path warning -->
 		<maven.compiler.proc>none</maven.compiler.proc>
 		<!-- Key ID used for artifact signing -->
+		<!-- FIXME -->
 		<gpg.keyname>5D6CFCC7</gpg.keyname>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
 	</properties>
 
+	<!-- FIXME Add additional dependencies -->
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -103,8 +123,9 @@
 	<!-- These are the default profiles supported: 1) dev: The default, which 
 		contains minimal debug information for stack tracing and debugging if source 
 		code is available. 2) release: Used to build and generate artifacts that 
-		are for manual deployments as well as repository deployment 3) debug: Uses 
-		debug classifier and contains full debug information for debuggung. -->
+		are for manual deployments as well as repository deployment and uses explicit 
+		JDK version. 3) debug: Uses debug classifier and contains full debug information 
+		for debuggung. -->
 	<profiles>
 		<profile>
 			<id>dev</id>
@@ -146,25 +167,29 @@
 			</activation>
 			<build>
 				<plugins>
+
+					<!-- Permits to check against against certain API compatibility leves -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>animal-sniffer-maven-plugin</artifactId>
-						<version>1.24</version>
+						<version>1.27</version>
+						<configuration>
+							<signature>
+								<!-- For CDC Java 1.4 compliance <groupId>com.optimasc.signatures</groupId> 
+									<artifactId>cdc11fp</artifactId> <version>1.0.0-SNAPSHOT</version> -->
+								<groupId>org.codehaus.mojo.signature</groupId>
+								<!-- Update according to target JDK API -->
+								<artifactId>java16</artifactId>
+								<version>1.1</version>
+							</signature>
+						</configuration>
 						<executions>
 							<execution>
 								<id>check-apis</id>
-								<phase>verify</phase>
+								<phase>test</phase>
 								<goals>
 									<goal>check</goal>
 								</goals>
-								<configuration>
-									<signature>
-										<groupId>org.codehaus.mojo.signature</groupId>
-										<!--  Update according to target JDK API -->
-										<artifactId>java16</artifactId>
-										<version>1.1</version>
-									</signature>
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>
@@ -183,6 +208,7 @@
 				<project.build.directory.classes>${project.build.directory}/classes</project.build.directory.classes>
 				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
 				<jar.classifier></jar.classifier>
+				<!-- Replace with 1.4 if necessary -->
 				<maven.compiler.source>1.6</maven.compiler.source>
 				<maven.compiler.target>1.6</maven.compiler.target>
 			</properties>
@@ -237,9 +263,9 @@
 				</pluginManagement>
 
 				<plugins>
-					<!-- Use specific JDK 6 javac directly for main sources only. Set JAVA6_HOME 
-						environment variable to your JDK 6 installation. Tests still compile and 
-						run on the system JDK. -->
+					<!-- Use specific JDK javac directly for main sources only. Set environment 
+						variable to your JDK installation. Tests still compile and run on the system 
+						JDK. -->
 					<plugin>
 						<artifactId>maven-compiler-plugin</artifactId>
 						<version>3.11.0</version>
@@ -249,7 +275,7 @@
 								<id>default-compile</id>
 								<phase>none</phase>
 							</execution>
-							<!-- Replace with forked JDK 6 compile -->
+							<!-- Replace with forked crrect JDK compile -->
 							<execution>
 								<id>compile-jdk6</id>
 								<phase>compile</phase>
@@ -258,6 +284,8 @@
 								</goals>
 								<configuration>
 									<fork>true</fork>
+									<!-- FIXME -->
+									<!-- <executable>${env.JAVA1_4_HOME}/bin/javac</executable> -->
 									<executable>${env.JAVA6_HOME}/bin/javac</executable>
 								</configuration>
 							</execution>
@@ -270,7 +298,33 @@
 								</goals>
 							</execution>
 						</executions>
-				
+					</plugin>
+					<!-- Permits to check against against certain API compatibility leves -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>animal-sniffer-maven-plugin</artifactId>
+						<version>1.27</version>
+						<configuration>
+							<signature>
+								<!-- For CDC Java 1.4 compliance <groupId>com.optimasc.signatures</groupId> 
+									<artifactId>cdc11fp</artifactId> <version>1.0.0-SNAPSHOT</version> -->
+								<groupId>org.codehaus.mojo.signature</groupId>
+								<!-- Update according to target JDK API -->
+								<artifactId>java16</artifactId>
+								<version>1.1</version>
+							</signature>
+						</configuration>
+						<executions>
+							<execution>
+								<id>check-apis</id>
+								<phase>test</phase>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
@@ -341,11 +395,14 @@
 
 			<plugin>
 				<artifactId>maven-install-plugin</artifactId>
-				<version>2.5.2</version>
+				<version>3.1.1</version>
 			</plugin>
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<version>2.8.2</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-site-plugin</artifactId>
@@ -356,15 +413,15 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>3.0.1</version>
 			</plugin>
-        <plugin>
-          <groupId>org.sonatype.central</groupId>
-          <artifactId>central-publishing-maven-plugin</artifactId>
-          <version>0.9.0</version>
-          <extensions>true</extensions>
-          <configuration>
-            <publishingServerId>central</publishingServerId>
-          </configuration>
-        </plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>0.9.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pdf-plugin</artifactId>
@@ -388,8 +445,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
+				<version>3.5.0</version>
 				<configuration>
+					<skip>${maven.javadoc.skip}</skip>
 					<failOnError>false</failOnError>
 				</configuration>
 				<executions>
@@ -421,6 +479,7 @@
 				<artifactId>maven-source-plugin</artifactId>
 				<version>3.0.1</version>
 				<configuration>
+					<skipSource>${maven.source.skip}</skipSource>
 				</configuration>
 				<executions>
 					<execution>
@@ -438,6 +497,8 @@
 				<version>3.0.1</version>
 				<configuration>
 					<releaseProfiles>release</releaseProfiles>
+					<pushChanges>false</pushChanges>
+					<localCheckout>true</localCheckout>
 				</configuration>
 			</plugin>
 
@@ -527,7 +588,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
+				<version>3.5.0</version>
 				<configuration>
 					<failOnError>false</failOnError>
 				</configuration>
