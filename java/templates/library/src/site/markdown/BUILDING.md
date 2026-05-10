@@ -33,14 +33,13 @@ any procedure in this document.
 
 ### Software prerequisites
 
-- Maven version 3.2.5 or later.
+- Maven version 3.9.0 or later.
+- Java runtime environment 8 or later.
+- Git
+- GPG 2.x or later  
 - Java Development Kit requirements depend on the build profile:
-  - **dev and debug profiles (default):** Any JDK from 1.6 up to and including JDK 17
-    is sufficient. Note that JDK 21 and later removed support for compiling with
-    `-source 1.6 / -target 1.6` and will produce a hard error. Contributors using
-    JDK 21 or later should install JDK 17 (recommended: Azul Zulu 17, freely available
-    at `https://www.azul.com/downloads/`), or override the compiler target temporarily
-    on the command line: `mvn install -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8`
+  - **dev and debug profiles (default):** Any JDK from 8 up to and including JDK 17
+    is sufficient.
   - **release profile:** Requires a JDK 1.6 installation declared as a Maven toolchain
     in `settings.xml` (see Environment Setup below). The recommended source is Azul
     Zulu 6, freely available at `https://www.azul.com/downloads/`. The toolchain ensures
@@ -64,50 +63,78 @@ are prerequisites for the build and release procedures that follow.
 Add the `bin` directory of the apache-maven installation directory
 to the `PATH` environment variable.
 
+Add the directory of the GPG executable installation directory
+to the `PATH` environment variable.
+
+Add the directory of the Git executable installation directory
+to the `PATH` environment variable.
+
+### Verify all tools are correctly setup
+
+Verify each is on your `PATH`:
+
+```bash
+java -version
+mvn -version
+git --version
+gpg --version
+```
+
+
 
 ### Repository credentials
 
 If artifacts are to be deployed to a remote repository, the Maven `settings.xml`
-file located in the `.m2` directory must contain valid deployment credentials. The
-following example configures credentials for the `ossrh` and `github.com` servers:
+file located in the `~/.m2/settings.xml` directory must contain valid deployment credentials. The
+following example configures credentials for the `sonatype` and `github.com` servers 
+as well as the `gpg` artifact signing.
 
 ```xml
 <servers>
+
+    <!-- Sonatype Central credentials (user token, NOT your portal password) -->
+    <server>
+      <id>central</id>
+      <username>YOUR_CENTRAL_TOKEN_USERNAME</username>
+      <password>YOUR_CENTRAL_TOKEN_PASSWORD</password>
+    </server>
+    <!-- GPG passphrase. The id MUST match the gpg.keyname property
+         in the parent pom (627E3C7E) because the gpg plugin is configured
+         with <passphraseServerId>${gpg.keyname}</passphraseServerId>. -->
+    <server>
+      <id>627E3C7E</id>
+      <passphrase>YOUR_GPG_PASSPHRASE</passphrase>
+    </server>
   <server>
-    <id>ossrh</id>
-    <username>TheUserName</username>
-    <password>ThePassword</password>
-  </server>
-  <server>
+    <!-- Github connection information -->
     <id>github.com</id>
     <username>TheUserName</username>
-    <password>ThePassword</password>
+    <password>YOUR_CENTRAL_TOKEN_PASSWORD</password>
   </server>
 </servers>
 ```
 
 ### Compilation toolchain configuration
 
-To build the `release` profile, the `settings.xml` file must also declare a JDK 1.6
-toolchain so that Maven can locate the correct compiler. Without this entry, the
+To build the `release` profile, the `settings.xml` file must also declare the
+appropriate JDK toolchain so that Maven can locate the correct compiler. 
+Without this entry, the
 `release` profile will fail with a toolchain resolution error. This entry is _not_
 required for the `dev`, `debug` profiles.
 
-Add the following `<toolchains>` block to `~/.m2/settings.xml`, adjusting the path
+Add the following `<properties>` block to `~/.m2/settings.xml`, adjusting the path
 to match the actual JDK installation on the build machine:
 
 ```xml
-<toolchains>
-  <toolchain>
-    <type>jdk</type>
-    <provides>
-      <version>1.6</version>
-    </provides>
-    <configuration>
-      <jdkHome>/path/to/jdk1.6</jdkHome>
-    </configuration>
-  </toolchain>
-</toolchains>
+   <profiles>
+      <profile>
+          <id>release</id>
+            <properties>
+              <JAVA1_4_HOME>/path/to/jdk1.6</JAVA1_4_HOME>
+              <JAVA6_HOME>/path/to/jdk6</JAVA6_HOME>
+            </properties>
+      </profile>
+    </profiles>
 ```
 
 Build Configuration Reference
@@ -212,8 +239,9 @@ In the case of a library, deletes the previously installed files from the local
 repository, including configuration data. This target does not modify the directories
 where compilation is done, only the directories where files are installed.
 
-Build Procedure
----------------
+Build and deployment procedures
+-------------------------------
+### Build procedure
 
 The following steps shall be executed to produce a standard development build.
 Complete the Environment Setup steps before proceeding.
@@ -225,8 +253,7 @@ Complete the Environment Setup steps before proceeding.
 4. Execute `mvn -P release package` to generate and sign the standard release
    artifacts, as well as creating independently package installable release artifacts.
 
-Release Procedure
------------------
+### Deployment procedure
 
 The following steps shall be executed to prepare and deploy a release. Complete the
 Build Procedure above before proceeding.
@@ -237,7 +264,8 @@ Build Procedure above before proceeding.
       type attribute (`add`, `update`, `remove`, `fix`) and content describing the
       changes in a high-level fashion.
 2. Execute `mvn clean`.
-3. Execute `mvn install` to build and install the `dev` profile package.
+3. Execute `mvn package` to build the `dev` profile package.
+4. Execute `mvn install` to install the `dev` profile package into the local repository.
 4. Execute `mvn -P debug install` to build and install the `debug` profile packages.
 5. Execute `mvn site` to build and create the documentation associated with the project.
 6. Execute `mvn -P release package` to generate and sign the standard release
@@ -248,3 +276,39 @@ Build Procedure above before proceeding.
    without publishing any artifacts.
 9. Execute `mvn release:prepare` to perform the actual release preparation and tagging.
 10. Execute `mvn release:perform` to deploy the release artifacts to the remote repository.
+
+#### After the upload
+
+The Sonatype Central deployment may need a manual release click in the portal,
+depending on plugin defaults. Check the deployment status at
+<https://central.sonatype.com/publishing/deployments> and release it manually if
+it's in a `VALIDATED` state awaiting confirmation.
+
+### Troubleshooting
+
+#### Recovering from a failed `release:prepare`
+
+* Failed before commit/tag was created : `mvn release:rollback`
+* Tag was created locally but not pushed : `git tag -d v1.1.0`, then `mvn release:rollback`
+* Tag was already pushed when failure occurred : `git push --delete origin v1.1.0`, then `mvn release:rollback`
+* Leftover `release.properties` / backup POMs : `mvn release:clean` |
+
+#### Others errors
+
+**`gpg: signing failed: No such file or directory`** — `gpg-agent` is not running
+or cannot prompt for the passphrase. Ensure the passphrase is in `settings.xml` (under
+the server id) or configure `gpg-agent` and `pinentry`.
+
+**`401 Unauthorized` from Sonatype Central** — the user token in `settings.xml` is
+incorrect, expired, or you used your portal password instead of a generated user token.
+Regenerate the token at <https://central.sonatype.com>.
+
+Coding conventions
+------------------
+The following coding conventions are used in development of Java code:
+
+- Braces placement follows the Allman style/BSD style as used by Eric Allman, in other words
+  this style puts the brace associated with a control statement on the next line, 
+  indented to the same level as the control statement. Statements within the braces are 
+  indented to the next level.
+- Indentation size is 2 spaces for each code block.  

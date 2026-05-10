@@ -17,7 +17,7 @@
 	<name><!-- FIXME Project short name --></name>
 	<description><!-- FIXME Short human-readable description of the project --></description>
 	<inceptionYear><!-- FIXME The year the project was first created. --></inceptionYear>
-	<url><!-- FIXME Project home page --></url>
+	<url><!-- FIXME Project home page - required --></url>
 
 	<licenses>
 		<license>
@@ -31,7 +31,7 @@
 	<developers>
 		<developer>
 			<name>Carl Eric Codere</name>
-			<organization>Optimas SC Inc.</organization>
+			<organization>Optima SC Inc.</organization>
 			<roles>
 				<role>creator</role>
 				<role>developer</role>
@@ -62,19 +62,6 @@
 		<url>https://github.com/ccodere/DTDParser/tree/main</url>
 	</scm>
 
-	<!-- The location of repositories -->
-	<repositories>
-		<repository>
-			<id>sonatype-snapshots</id>
-			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 
 	<distributionManagement>
@@ -105,7 +92,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
 	</properties>
-
+	
 	<!-- FIXME Add additional dependencies -->
 	<dependencies>
 		<dependency>
@@ -117,7 +104,19 @@
 	</dependencies>
 
 
-
+	<!-- The location of repositories -->
+	<repositories>
+		<repository>
+			<id>sonatype-snapshots</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 
 	<!-- These are the default profiles supported: 1) dev: The default, which 
@@ -284,9 +283,10 @@
 								</goals>
 								<configuration>
 									<fork>true</fork>
-									<!-- FIXME -->
-									<!-- <executable>${env.JAVA1_4_HOME}/bin/javac</executable> -->
-									<executable>${env.JAVA6_HOME}/bin/javac</executable>
+									<!-- FIXME: Ensure that ~/.m2/settings.xml contain
+									     the defined properties here for the release profile -->
+									<!-- <executable>${JAVA1_4_HOME}/bin/javac</executable> -->
+									<executable>${JAVA6_HOME}/bin/javac</executable>
 								</configuration>
 							</execution>
 							<!-- Test compile stays on system JDK -->
@@ -306,8 +306,11 @@
 						<version>1.27</version>
 						<configuration>
 							<signature>
-								<!-- For CDC Java 1.4 compliance <groupId>com.optimasc.signatures</groupId> 
-									<artifactId>cdc11fp</artifactId> <version>1.0.0-SNAPSHOT</version> -->
+								<!-- For CDC Java 1.4 compliance 
+								    <groupId>com.optimasc.signatures</groupId> 
+									<artifactId>cdc11fp</artifactId>
+									<version>1.1.0</version> 
+							   -->
 								<groupId>org.codehaus.mojo.signature</groupId>
 								<!-- Update according to target JDK API -->
 								<artifactId>java16</artifactId>
@@ -398,6 +401,7 @@
 				<version>3.1.1</version>
 			</plugin>
 			<plugin>
+			    <!-- Disabled because deployment is done through: central-publishing-maven-plugin -->
 				<artifactId>maven-deploy-plugin</artifactId>
 				<version>2.8.2</version>
 				<configuration>
@@ -420,12 +424,13 @@
 				<extensions>true</extensions>
 				<configuration>
 					<publishingServerId>central</publishingServerId>
+					<autoPublish>false</autoPublish>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pdf-plugin</artifactId>
-				<version>1.4</version>
+				<version>1.6.2</version>
 				<executions>
 					<execution>
 						<id>pdf</id>
@@ -491,16 +496,18 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>3.0.1</version>
-				<configuration>
-					<releaseProfiles>release</releaseProfiles>
-					<pushChanges>false</pushChanges>
-					<localCheckout>true</localCheckout>
-				</configuration>
-			</plugin>
+				<plugin>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>3.3.1</version>
+					<configuration>
+     					<releaseProfiles>release</releaseProfiles>
+						<tagNameFormat>v@{project.version}</tagNameFormat>
+						<autoVersionSubmodules>true</autoVersionSubmodules>
+						<pushChanges>false</pushChanges>
+						<localCheckout>true</localCheckout>
+						<projectVersionPolicyId>SemVerMinorDevelopment</projectVersionPolicyId>
+					</configuration>
+				</plugin>				
 
 			<!-- These plugins override the pluginmanagement sections, and are assigned 
 				non-existent phases so they will never execute at this level. -->
