@@ -91,6 +91,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+		
+		<!-- API signature checked in every build. Update according to the target API. -->
+		<api.signature.groupId>org.codehaus.mojo.signature</api.signature.groupId>
+		<api.signature.artifactId>java16</api.signature.artifactId>
+		<api.signature.version>1.1</api.signature.version>		
 	</properties>
 	
 	<!-- FIXME Add additional dependencies -->
@@ -124,7 +129,7 @@
 		code is available. 2) release: Used to build and generate artifacts that 
 		are for manual deployments as well as repository deployment and uses explicit 
 		JDK version. 3) debug: Uses debug classifier and contains full debug information 
-		for debuggung. -->
+		for debugging. -->
 	<profiles>
 		<profile>
 			<id>dev</id>
@@ -138,8 +143,8 @@
 				<maven.javadoc.skip>false</maven.javadoc.skip>
 				<maven.source.skip>true</maven.source.skip>
 				<assembly.skipAssembly>true</assembly.skipAssembly>
-				<project.build.directory.classes>${project.build.directory}/classes</project.build.directory.classes>
-				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
+				<project.build.directory.classes>${project.build.directory}/classes-dev</project.build.directory.classes>
+				<project.build.outputDirectory.classes.jar>${project.build.directory.classes}</project.build.outputDirectory.classes.jar>
 				<jar.classifier></jar.classifier>
 			</properties>
 		</profile>
@@ -147,12 +152,13 @@
 			<id>debug</id>
 			<properties>
 				<maven.compiler.debug>true</maven.compiler.debug>
+				<maven.compiler.debuglevel>lines,vars,source</maven.compiler.debuglevel>
 				<maven.compiler.optimize>false</maven.compiler.optimize>
 				<maven.javadoc.skip>true</maven.javadoc.skip>
 				<maven.source.skip>true</maven.source.skip>
 				<assembly.skipAssembly>true</assembly.skipAssembly>
 				<project.build.directory.classes>${project.build.directory}/classes-debug</project.build.directory.classes>
-				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
+				<project.build.outputDirectory.classes.jar>${project.build.directory.classes}</project.build.outputDirectory.classes.jar>
 				<jar.classifier>debug</jar.classifier>
 			</properties>
 		</profile>
@@ -167,7 +173,7 @@
 			<build>
 				<plugins>
 
-					<!-- Permits to check against against certain API compatibility leves -->
+					<!-- Permits to check against against certain API compatibility levels -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -205,7 +211,7 @@
 				<maven.source.skip>false</maven.source.skip>
 				<assembly.skipAssembly>false</assembly.skipAssembly>
 				<project.build.directory.classes>${project.build.directory}/classes</project.build.directory.classes>
-				<project.build.outputDirectory.classes.jar>${project.build.outputDirectory.classes}</project.build.outputDirectory.classes.jar>
+				<project.build.outputDirectory.classes.jar>${project.build.directory.classes}</project.build.outputDirectory.classes.jar>
 				<jar.classifier></jar.classifier>
 				<!-- Replace with 1.4 if necessary -->
 				<maven.compiler.source>1.6</maven.compiler.source>
@@ -274,7 +280,7 @@
 								<id>default-compile</id>
 								<phase>none</phase>
 							</execution>
-							<!-- Replace with forked crrect JDK compile -->
+							<!-- Replace with forked correct JDK compile -->
 							<execution>
 								<id>compile-jdk6</id>
 								<phase>compile</phase>
@@ -299,7 +305,7 @@
 							</execution>
 						</executions>
 					</plugin>
-					<!-- Permits to check against against certain API compatibility leves -->
+					<!-- Permits to check against certain API compatibility leves -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -389,6 +395,7 @@
 						</manifest>
 						<manifestEntries>
 							<Build_Target>${maven.compiler.target}</Build_Target>
+							<Module-Name>${project.artifactId}</Module-Name>
 						</manifestEntries>
 					</archive>
 					<classifier>${jar.classifier}</classifier>
@@ -521,7 +528,7 @@
 				<executions>
 					<execution>
 						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>null</phase> <!-- bind to the packaging phase -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
 					</execution>
 				</executions>
 			</plugin>
